@@ -10,9 +10,10 @@ from scipy.io import loadmat
 from itertools import izip
 import json
 import numpy as np
-
+import sys
+import os.path
+sys.path.append(os.path.expanduser('/notebooks/deeppose_tf'))
 from scripts.config import *
-
 MPII_DATA_DIR = MPII_DATASET_ROOT
 MPII_OUT_DIR = MPII_DATASET_ROOT
 

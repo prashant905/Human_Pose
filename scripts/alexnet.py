@@ -8,8 +8,16 @@ import numpy as np
 import os
 import tensorflow as tf
 import tensorflow.contrib.layers as tflayers
-
-
+import cv2
+import sys
+import argparse
+import multiprocessing
+from tensorflow.contrib.layers import variance_scaling_initializer
+from tensorpack import *
+from tensorpack.utils.stats import RatioCounter
+from tensorpack.tfutils.symbolic_functions import *
+from tensorpack.tfutils.summary import *
+from tensorpack import TowerContext
 class Alexnet(object):
     """
     Net description
@@ -29,7 +37,9 @@ class Alexnet(object):
             .softmax(name='prob'))
 
     WARNING! You should feed images in HxWxC BGR format!
-    """
+        """
+    
+
 
     class RandomInitType:
         GAUSSIAN = 0,
@@ -77,8 +87,40 @@ class Alexnet(object):
             self.x = tf.placeholder(tf.float32, (None,) + self.input_shape, name='x')
             self.y_gt = tf.placeholder(tf.int32, shape=(None,), name='y_gt')
             self.is_phase_train = tf.placeholder(tf.bool, shape=tuple(), name='is_phase_train')
+            
+        def shortcut(l, n_in, n_out, stride):
+            if n_in != n_out:
+                return Conv2D('convshortcut', l, n_out, 1, stride=stride)
+            else:
+                return l 
+            
+        def basicblock(l, ch_out, stride, preact):
+            ch_in = l.get_shape().as_list()[1]
+            if preact == 'both_preact':
+                l = BNReLU('preact', l)
+                input = l
+            elif preact != 'no_preact':
+                input = l
+                l = BNReLU('preact', l)
+            else:
+                input = l
+            l = Conv2D('conv1', l, ch_out, 3, stride=stride, nl=BNReLU)
+            l = Conv2D('conv2', l, ch_out, 3)
+            return l + shortcut(input, ch_in, ch_out, stride)
 
-        self.__create_architecture(net_data, use_batch_norm)
+       
+        def layer(l, layername, block_func, features, count, stride, first=False):
+            with tf.variable_scope(layername):
+                with tf.variable_scope('block0'):
+                    l = block_func(l, features, stride,
+                                   'no_preact' if first else 'both_preact')
+                for i in range(1, count):
+                    with tf.variable_scope('block{}'.format(i)):
+                        l = block_func(l, features, 1, 'default')
+                return l
+
+        with TowerContext('', is_training=True):
+            self.create_architecture(net_data, use_batch_norm)
 
         self.graph = tf.get_default_graph()
         config = tf.ConfigProto(log_device_placement=False,
@@ -89,17 +131,61 @@ class Alexnet(object):
         else:
             config.gpu_options.per_process_gpu_memory_fraction = gpu_memory_fraction
         self.sess = tf.Session(config=config)
+         
+       
+        
 
-    def __create_architecture(self, net_data, use_batch_norm):
-        print 'Alexnet::__create_architecture()'
+    
+    def create_architecture(self,net_data,use_batch_norm):
         tr_vars = dict()
+        def shortcut(l, n_in, n_out, stride):
+            if n_in != n_out:
+                return Conv2D('convshortcut', l, n_out, 1, stride=stride)
+            else:
+                return l 
+        
+        def basicblock(l, ch_out, stride, preact):
+            ch_in = l.get_shape().as_list()[1]
+            if preact == 'both_preact':
+                l = BNReLU('preact', l)
+                input = l
+            elif preact != 'no_preact':
+                input = l
+                l = BNReLU('preact', l)
+            else:
+                input = l
+            l = Conv2D('conv1', l, ch_out, 3, stride=stride, nl=BNReLU)
+            l = Conv2D('conv2', l, ch_out, 3)
+            return l + shortcut(input, ch_in, ch_out, stride)
+
+        
+        
+        def layer(l, layername, block_func, features, count, stride, first=False):
+            with tf.variable_scope(layername):
+                with tf.variable_scope('block0'):
+                    l = block_func(l, features, stride,
+                                   'no_preact' if first else 'both_preact')
+                for i in range(1, count):
+                    with tf.variable_scope('block{}'.format(i)):
+                        l = block_func(l, features, 1, 'default')
+                        return l
+        
+        
+        
+        
+        
+        
+        cfg = {
+            18: ([2, 2, 2, 2], basicblock),
+            34: ([3, 4, 6, 3], basicblock)
+        }
         with tf.device(self.device_id):
             layer_index = 0
             # conv(11, 11, 96, 4, 4, padding='VALID', name='conv1')
             with tf.variable_scope('conv1'):
                 kernel_height = 11
                 kernel_width = 11
-                kernels_num = 96
+                kernels_num = 64
                 group = 1
                 num_input_channels = int(self.x.get_shape()[3])
                 s_h = 4  # stride by the H dimension (height)
@@ -113,177 +199,93 @@ class Alexnet(object):
                                         kernel_height, kernel_width,
                                         kernels_num, s_h, s_w, padding="SAME", group=group)
                 conv1 = tf.nn.relu(conv1_in)
-
-                # lrn1
-                # lrn(2, 2e-05, 0.75, name='norm1')
-                lrn1 = tf.nn.local_response_normalization(conv1,
-                                                          depth_radius=2,
-                                                          alpha=2e-05,
-                                                          beta=0.75,
-                                                          bias=1.0, name='lrn')
-
-                # maxpool1
-                # max_pool(3, 3, 2, 2, padding='VALID', name='pool1')
-                kernel_height = 3
-                kernel_width = 3
-                s_h = 2
-                s_w = 2
-                padding = 'VALID'
-                maxpool1 = tf.nn.max_pool(lrn1, ksize=[1, kernel_height, kernel_width, 1],
-                                          strides=[1, s_h, s_w, 1], padding=padding,
-                                          name='maxpool')
-
-            # conv(5, 5, 256, 1, 1, group=2, name='conv2')
-            with tf.variable_scope('conv2'):
-                kernel_height = 5
-                kernel_width = 5
-                kernels_num = 256
-                num_input_channels = int(maxpool1.get_shape()[3])
-                s_h = 1
-                s_w = 1
-                group = 2
-                tr_vars['conv2w'], tr_vars['conv2b'] = \
-                    self.get_conv_weights(layer_index, net_data,
-                                          kernel_height, kernel_width,
-                                          num_input_channels / group, kernels_num)
-                layer_index += 1
-                conv2_in = Alexnet.conv(maxpool1, tr_vars['conv2w'], tr_vars['conv2b'],
-                                        kernel_height, kernel_width,
-                                        kernels_num, s_h, s_w, padding="SAME", group=group)
-                conv2 = tf.nn.relu(conv2_in, name='relu')
-
-                # lrn2
-                # lrn(2, 2e-05, 0.75, name='norm2')
-                lrn2 = tf.nn.local_response_normalization(conv2, depth_radius=2,
-                                                          alpha=2e-05,
-                                                          beta=0.75,
-                                                          bias=1.0)
-
-                # maxpool2
-                # max_pool(3, 3, 2, 2, padding='VALID', name='pool2')
-                kernel_height = 3
-                kernel_width = 3
-                s_h = 2
-                s_w = 2
-                padding = 'VALID'
-                maxpool2 = tf.nn.max_pool(lrn2, ksize=[1, kernel_height, kernel_width, 1],
-                                          strides=[1, s_h, s_w, 1], padding=padding)
-
-            # conv(3, 3, 384, 1, 1, name='conv3')
-            with tf.variable_scope('conv3'):
-                kernel_height = 3
-                kernel_width = 3
-                kernels_num = 384
-                num_input_channels = int(maxpool2.get_shape()[3])
-                s_h = 1
-                s_w = 1
-                group = 1
-                tr_vars['conv3w'], tr_vars['conv3b'] = \
-                    self.get_conv_weights(layer_index, net_data,
-                                          kernel_height, kernel_width,
-                                          num_input_channels / group, kernels_num)
-                layer_index += 1
-                conv3_in = Alexnet.conv(maxpool2, tr_vars['conv3w'], tr_vars['conv3b'],
-                                        kernel_height, kernel_width,
-                                        kernels_num, s_h, s_w, padding="SAME", group=group)
-
-                conv3 = tf.nn.relu(conv3_in, 'relu')
-
-            # conv(3, 3, 384, 1, 1, group=2, name='conv4')
-            with tf.variable_scope('conv4'):
-                kernel_height = 3
-                kernel_width = 3
-                kernels_num = 384
-                num_input_channels = int(conv3.get_shape()[3])
-                s_h = 1
-                s_w = 1
-                group = 2
-                tr_vars['conv4w'], tr_vars['conv4b'] = \
-                    self.get_conv_weights(layer_index, net_data,
-                                          kernel_height, kernel_width,
-                                          num_input_channels / group, kernels_num)
-                layer_index += 1
-                conv4_in = Alexnet.conv(conv3, tr_vars['conv4w'], tr_vars['conv4b'],
-                                        kernel_height, kernel_width,
-                                        kernels_num, s_h, s_w, padding="SAME", group=group)
-                conv4 = tf.nn.relu(conv4_in, name='relu')
-
-            # conv(3, 3, 256, 1, 1, group=2, name='conv5')
-            with tf.variable_scope('conv5'):
-                kernel_height = 3
-                kernel_width = 3
-                kernels_num = 256
-                num_input_channels = int(conv4.get_shape()[3])
-                s_h = 1
-                s_w = 1
-                group = 2
-                tr_vars['conv5w'], tr_vars['conv5b'] = \
-                    self.get_conv_weights(layer_index, net_data,
-                                          kernel_height, kernel_width,
-                                          num_input_channels / group, kernels_num)
-                layer_index += 1
-                self.conv5 = Alexnet.conv(conv4, tr_vars['conv5w'], tr_vars['conv5b'],
-                                          kernel_height, kernel_width,
-                                          kernels_num, s_h, s_w, padding="SAME", group=group)
-                self.conv5_relu = tf.nn.relu(self.conv5, name='relu')
-
-                # max_pool(3, 3, 2, 2, padding='VALID', name='pool5')
-                kernel_height = 3
-                kernel_width = 3
-                s_h = 2
-                s_w = 2
-                padding = 'VALID'
-                self.maxpool5 = tf.nn.max_pool(self.conv5_relu,
-                                               ksize=[1, kernel_height, kernel_width, 1],
-                                               strides=[1, s_h, s_w, 1], padding=padding,
-                                               name='maxpool')
-
-            # fc(4096, name='fc6')
-            with tf.variable_scope('fc6'):
-                num_inputs = int(np.prod(self.maxpool5.get_shape()[1:]))
-                num_outputs = 4096
-                tr_vars['fc6w'], tr_vars['fc6b'] = \
-                    self.get_fc_weights(layer_index, net_data, num_inputs, num_outputs)
-                layer_index += 1
-                self.fc6 = tf.add(tf.matmul(
-                    tf.reshape(self.maxpool5,
-                               [-1, int(np.prod(self.maxpool5.get_shape()[1:]))]
-                               ),
-                    tr_vars['fc6w']),
-                    tr_vars['fc6b'], name='fc')
-
-                if use_batch_norm:
-                    print 'Using batch_norm after FC6'
-                    self.fc6_bn = tflayers.batch_norm(self.fc6, decay=0.999,
-                                                      is_training=self.is_phase_train,
-                                                      trainable=False)
-                    out = self.fc6_bn
-                else:
-                    out = self.fc6
-
-                self.fc6_relu = tf.nn.relu(out, name='relu')
-
-                self.fc6_keep_prob = tf.placeholder_with_default(1.0, tuple(),
+                
+        DEPTH =18
+        defs, block_func = cfg[DEPTH]
+        
+        
+        with argscope(Conv2D, nl=tf.identity, use_bias=False,
+                      W_init=variance_scaling_initializer(mode='FAN_OUT')), \
+                argscope([Conv2D, MaxPooling, GlobalAvgPooling, BatchNorm], data_format='NCHW'):
+            logits = (LinearWrap(conv1)
+                      .MaxPooling('pool0', shape=3, stride=2, padding='SAME')
+                      .apply(layer, 'group0', block_func, 64, defs[0], 1, first=True)
+                      .apply(layer, 'group1', block_func, 128, defs[1], 2)
+                      .apply(layer, 'group2', block_func, 256, defs[2], 2)
+                      .apply(layer, 'group3', block_func, 512, defs[3], 2)
+                      .BNReLU('bnlast')
+                      .GlobalAvgPooling('gap')
+                      .FullyConnected('linear', 1000, nl=tf.nn.relu)())
+            print logits.get_shape()
+            Graph = tf.get_default_graph()
+            self.W = Graph.get_tensor_by_name('linear/W:0')
+            self.b = Graph.get_tensor_by_name('linear/b:0')
+            tr_vars['conv2w'] = Graph.get_tensor_by_name('group0/block0/conv1/W:0')
+            tr_vars['conv3w'] = Graph.get_tensor_by_name('group0/block0/conv2/W:0')
+            
+            tr_vars['conv4w'] = Graph.get_tensor_by_name('group0/block0/convshortcut/W:0')
+            
+            tr_vars['conv5w'] = Graph.get_tensor_by_name('group0/block1/conv1/W:0')
+           
+            tr_vars['conv6w'] = Graph.get_tensor_by_name('group0/block1/conv2/W:0')
+           
+            tr_vars['conv7w'] = Graph.get_tensor_by_name('group1/block0/conv1/W:0')
+  
+            tr_vars['conv8w'] = Graph.get_tensor_by_name('group1/block0/conv2/W:0')
+         
+            tr_vars['conv9w'] = Graph.get_tensor_by_name('group1/block0/convshortcut/W:0')
+            
+            tr_vars['conv9w'] = Graph.get_tensor_by_name('group1/block1/conv1/W:0')
+            
+            tr_vars['conv10w'] = Graph.get_tensor_by_name('group1/block1/conv2/W:0')
+           
+            tr_vars['conv11w'] = Graph.get_tensor_by_name('group2/block0/conv1/W:0')
+            
+            tr_vars['conv12w'] = Graph.get_tensor_by_name('group2/block0/conv2/W:0')
+            
+            tr_vars['conv13w'] = Graph.get_tensor_by_name('group2/block0/convshortcut/W:0')
+            
+            tr_vars['conv14w'] = Graph.get_tensor_by_name('group2/block1/conv1/W:0')
+            
+            tr_vars['conv15w'] = Graph.get_tensor_by_name('group2/block1/conv2/W:0')
+            
+            tr_vars['conv16w'] = Graph.get_tensor_by_name('group3/block0/conv1/W:0')
+            
+            tr_vars['conv17w'] = Graph.get_tensor_by_name('group3/block0/conv2/W:0')
+            
+            tr_vars['conv18w'] = Graph.get_tensor_by_name('group3/block0/convshortcut/W:0')
+           
+            tr_vars['conv19w'] = Graph.get_tensor_by_name('group3/block1/conv1/W:0')
+            
+            tr_vars['conv20w'] = Graph.get_tensor_by_name('group3/block1/conv2/W:0')
+            
+            tr_vars['linear/W']= Graph.get_tensor_by_name('linear/W:0')
+            tr_vars['linear/b']= Graph.get_tensor_by_name('linear/b:0')
+            
+            self.logits_relu = tf.nn.relu(logits, name='relu')
+            self.logits_keep_prob = tf.placeholder_with_default(1.0, tuple(),
                                                                  name='keep_prob_pl')
-                fc6_dropout = tf.nn.dropout(self.fc6_relu, self.fc6_keep_prob, name='dropout')
-
-            # fc(4096, name='fc7')
-            with tf.variable_scope('fc7'):
-                num_inputs = int(fc6_dropout.get_shape()[1])
-                num_outputs = 4096
-                tr_vars['fc7w'], tr_vars['fc7b'] = \
+            self.logit_dropout = tf.nn.dropout(self.logits_relu, self.logits_keep_prob, name='dropout')
+            
+            
+        with tf.variable_scope('fc7'):
+            num_inputs = int(self.logit_dropout.get_shape()[1])
+            print num_inputs
+            layer_index=99
+            num_outputs = 1000
+            tr_vars['fc7w'], tr_vars['fc7b'] = \
                     self.get_fc_weights(layer_index, net_data, num_inputs, num_outputs)
-                layer_index += 1
-                self.fc7 = tf.add(tf.matmul(fc6_dropout, tr_vars['fc7w']), tr_vars['fc7b'],
+            layer_index += 1
+            self.fc7 = tf.add(tf.matmul(self.logit_dropout, tr_vars['fc7w']), tr_vars['fc7b'],
                                   name='fc')
-                if use_batch_norm:
-                    print 'Using batch_norm after FC7'
-                    self.fc7_bn = tflayers.batch_norm(self.fc7, decay=0.999,
+            if use_batch_norm:
+                print 'Using batch_norm after FC7'
+                self.fc7_bn = tflayers.batch_norm(self.fc7,decay=0.999,
                                                       is_training=self.is_phase_train,
                                                       trainable=False)
-                    out = self.fc7_bn
-                else:
-                    out = self.fc7
+                out = self.fc7_bn
+            else:
+                out = self.fc7
 
                 self.fc7_relu = tf.nn.relu(out, name='relu')
 
@@ -291,22 +293,17 @@ class Alexnet(object):
                                                                  name='keep_prob_pl')
                 self.fc7_dropout = tf.nn.dropout(self.fc7_relu, self.fc7_keep_prob, name='dropout')
 
-            # fc(num_classes, relu=False, name='fc8')
-            with tf.variable_scope('fc8'):
-                num_inputs = int(self.fc7_dropout.get_shape()[1])
-                num_outputs = self.num_classes
-                tr_vars['fc8w'], tr_vars['fc8b'] = \
-                    self.get_fc_weights(layer_index, net_data, num_inputs, num_outputs)
-                layer_index += 1
-                self.fc8 = tf.add(tf.matmul(self.fc7_dropout, tr_vars['fc8w']), tr_vars['fc8b'],
-                                  name='fc')
-                assert self.fc8.get_shape()[1] == self.num_classes, \
-                    '{} != {}'.format(self.fc8.get_shape()[1], self.num_classes)
-
-            self.logits = self.fc8
+            self.logits = self.fc7
             with tf.variable_scope('output'):
-                self.prob = tf.nn.softmax(self.fc8, name='prob')
+                self.prob = tf.nn.softmax(self.fc7, name='prob')
         self.trainable_vars = tr_vars
+            
+
+       
+            
+             
+
+        
 
     def restore_from_snapshot(self, snapshot_path, num_layers, restore_iter_counter=False):
         """
@@ -366,48 +363,23 @@ class Alexnet(object):
             b = tf.Variable(net_data[l_name]['biases'], name='bias')
         return w, b
 
-    def get_fc_weights(self, layer_index, net_data, num_inputs, num_outputs,
-                       wights_std=None,
-                       bias_init_value=None):
-        if layer_index <= 8:
-            if wights_std is not None or bias_init_value is not None:
-                raise ValueError('std and bias must be None for layers 1..8, they are set up automatically')
-            layer_names = ['conv{}'.format(i) for i in xrange(1, 6)] + \
-                          ['fc{}'.format(i) for i in xrange(6, 9)]
-            wights_stds = [0.01] * 5 + [0.005, 0.005, 0.01]
-            bias_init_values = [0.0, 0.1, 0.0, 0.1, 0.1, 0.1, 0.1, 0.0]
-            l_name = layer_names[layer_index]
-
-            wights_std = wights_stds[layer_index]
-            bias_init_value = bias_init_values[layer_index]
-        else:
-            l_name = 'layer {}'.format(layer_index)
-            if self.random_init_type == Alexnet.RandomInitType.GAUSSIAN and \
-                    (wights_std is None):
-                raise ValueError('wights_std must be provided for all layers beyond 1..8 with RandomInitType.GAUSSIAN')
-            if bias_init_value is None:
-                raise ValueError('bias_init_value must be provided for all layers beyond 1..8')
-
-        if net_data is not None and layer_index < self.num_layers_to_init:
-            assert net_data[l_name]['weights'].shape == (num_inputs, num_outputs)
-            assert net_data[l_name]['biases'].shape == (num_outputs,)
-
-        if layer_index >= self.num_layers_to_init or net_data is None:
-            print 'Initializing {} with random'.format(l_name)
-            w = self.random_weight_variable((num_inputs, num_outputs),
+    def get_fc_weights(self,layer_index,net_data, num_inputs, num_outputs,
+                       wights_std=0.01,
+                       bias_init_value=0.0):
+        print num_inputs
+        
+        w = self.random_weight_variable((num_inputs, num_outputs),
                                             stddev=wights_std)
-            b = self.random_bias_variable((num_outputs,), value=bias_init_value)
-        else:
-            w = tf.Variable(net_data[l_name]['weights'], name='weight')
-            b = tf.Variable(net_data[l_name]['biases'], name='bias')
-        return w, b
+        b = self.random_bias_variable((num_outputs,), value=bias_init_value)
+        return w,b
 
     def random_weight_variable(self, shape, stddev=0.01):
         """
         stddev is used only for RandomInitType.GAUSSIAN
         """
+        
         if self.random_init_type == Alexnet.RandomInitType.GAUSSIAN:
-            initial = tf.truncated_normal(shape, stddev=stddev)
+            initial = tf.truncated_normal(shape, stddev=0.01)
             return tf.Variable(initial, name='weight')
         elif self.random_init_type == Alexnet.RandomInitType.XAVIER_GAUSSIAN:
             return tf.get_variable("weight", shape=shape,
@@ -441,9 +413,13 @@ class Alexnet(object):
         if group == 1:
             conv = convolve(input, kernel, name='conv')
         else:
-            input_groups = tf.split(3, group, input)
-            kernel_groups = tf.split(3, group, kernel)
+            input_groups = tf.split(input, group, 3)
+            kernel_groups = tf.split(kernel, group,3)
             output_groups = [convolve(i, k) for i, k in zip(input_groups, kernel_groups)]
-            conv = tf.concat(3, output_groups)
+            conv = tf.concat(output_groups,3)
         return tf.reshape(tf.nn.bias_add(conv, biases),
                           [-1] + conv.get_shape().as_list()[1:], name='conv')
+    
+   
+        
+        

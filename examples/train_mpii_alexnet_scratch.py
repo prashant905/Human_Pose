@@ -1,11 +1,11 @@
 import sys
 import shlex
 import os.path
-sys.path.append(os.path.expanduser('~/tmp/deeppose_tf'))
+sys.path.append(os.path.expanduser('/notebooks/deeppose_tf'))
 import scripts.train
 import scripts.config
 
-argv = """
+argv = """ 
 --max_iter 1000000 \
 --batch_size 128 \
 --snapshot_step 5000 \
@@ -41,7 +41,6 @@ argv = """
 --net_type Alexnet \
 --reset_iter_counter
 """.format(scripts.config.ROOT_DIR)
-
 argv = shlex.split(argv)
 print argv
 scripts.train.main(argv)

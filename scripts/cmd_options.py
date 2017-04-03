@@ -42,7 +42,7 @@ def get_arguments(argv):
     parser.add_argument('--snapshot_step', type=int, default=10000)
     parser.add_argument('--seed', type=int, default=1701)
     parser.add_argument('--ignore_label', type=float, default=-1)
-    parser.add_argument('--dataset_name', type=str, choices=['lsp', 'mpii'], default='lsp')
+    parser.add_argument('--dataset_name', type=str, choices=['lsp', 'mpii'], default='mpii')
     parser.add_argument(
         '--train_csv_fn', type=str,
         default=os.path.join(LSP_EXT_DATASET_ROOT, 'train_joints.csv'))

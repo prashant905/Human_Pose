@@ -9,12 +9,14 @@ import os
 import time
 import regressionnet
 import tensorflow as tf
+from tensorflow.python.summary.writer.writer import FileWriter as _FileWriter
 import copy
 from tqdm import tqdm
 import numpy as np
 import math
 import pprint
 import datetime
+import gc
 
 from regressionnet import evaluate_pcp, create_sumamry
 
@@ -58,8 +60,8 @@ def train_loop(net, saver, loss_op, pose_loss_op, train_op, dataset_name, train_
     summary_step = 50
 
     with net.graph.as_default():
-        summary_writer = tf.train.SummaryWriter(output_dir, net.sess.graph)
-        summary_op = tf.merge_all_summaries()
+        summary_writer = tf.summary.FileWriter(output_dir, net.sess.graph)
+        summary_op = tf.summary.merge_all()
         fc_train_op = net.graph.get_operation_by_name('fc_train_op')
     global_step = None
 
@@ -68,6 +70,7 @@ def train_loop(net, saver, loss_op, pose_loss_op, train_op, dataset_name, train_
         # test, snapshot
         if step % test_step == 0 or step + 1 == max_iter or step == fix_conv_iter:
             global_step = net.sess.run(net.global_iter_counter)
+            gc.collect()
             evaluate_pcp(net, pose_loss_op, test_iterator, summary_writer,
                          dataset_name=dataset_name,
                          tag_prefix='test')
@@ -137,7 +140,7 @@ def main(argv):
         reset_iter_counter=args.reset_iter_counter,
         reset_moving_averages=args.reset_moving_averages,
         optimizer_type=args.optimizer,
-        gpu_memory_fraction=0.32,  # Set how much GPU memory to reserve for the network
+        gpu_memory_fraction=0.20,  # Set how much GPU memory to reserve for the network
         net_type=args.net_type)
     with net.graph.as_default():
         saver = tf.train.Saver()

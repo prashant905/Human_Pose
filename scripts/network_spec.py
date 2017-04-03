@@ -29,13 +29,15 @@ def training_convnet(net, loss_op, fc_lr, conv_lr, optimizer_type='adagrad',
 
         conv_vars = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, 'conv')
         fc_vars = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, 'fc')
-
-        assert len(conv_vars) + len(fc_vars) == \
-            len(tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES)),\
+    
+        len(conv_vars) + len(fc_vars) == \
+        len(tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES)),\
             'You dont train all the variables'
 
         grads = tf.gradients(loss_op, conv_vars + fc_vars)
+       
         conv_grads = grads[:len(conv_vars)]
+        
         fc_grads = grads[len(conv_vars):]
         assert len(conv_grads) == len(conv_vars)
         assert len(fc_grads) == len(fc_vars)
@@ -46,7 +48,7 @@ def training_convnet(net, loss_op, fc_lr, conv_lr, optimizer_type='adagrad',
                     grad_norm_op = tf.nn.l2_loss(grad, name=format(v.name[:-2]))
                     tf.add_to_collection('grads', grad_norm_op)
                     if trace_gradients:
-                        tf.scalar_summary(grad_norm_op.name, grad_norm_op)
+                        tf.summary.scalar(grad_norm_op.name, grad_norm_op)
 
         update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
         with tf.control_dependencies(update_ops):
