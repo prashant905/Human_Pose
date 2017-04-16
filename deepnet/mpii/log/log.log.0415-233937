@@ -1,0 +1,141 @@
+[32m[0415 23:38:49 @logger.py:69][0m Argv: main.py
+[32m[0415 23:38:50 @common.py:94][0m conv0 input: [None, 368, 368, 3]
+[32m[0415 23:38:50 @common.py:102][0m conv0 output: [None, 184, 184, 64]
+[32m[0415 23:38:50 @common.py:94][0m pool0 input: [None, 184, 184, 64]
+[32m[0415 23:38:50 @common.py:102][0m pool0 output: [None, 92, 92, 64]
+[32m[0415 23:38:50 @common.py:94][0m group0/block0/conv1 input: [None, 92, 92, 64]
+[32m[0415 23:38:50 @common.py:102][0m group0/block0/conv1 output: [None, 92, 92, 64]
+[32m[0415 23:38:50 @common.py:94][0m group0/block0/conv2 input: [None, 92, 92, 64]
+[32m[0415 23:38:50 @common.py:102][0m group0/block0/conv2 output: [None, 92, 92, 64]
+[32m[0415 23:38:50 @common.py:94][0m group0/block0/convshortcut input: [None, 92, 92, 64]
+[32m[0415 23:38:50 @common.py:102][0m group0/block0/convshortcut output: [None, 92, 92, 64]
+[32m[0415 23:38:50 @common.py:94][0m group0/block1/conv1 input: [None, 92, 92, 64]
+[32m[0415 23:38:50 @common.py:102][0m group0/block1/conv1 output: [None, 92, 92, 64]
+[32m[0415 23:38:50 @common.py:94][0m group0/block1/conv2 input: [None, 92, 92, 64]
+[32m[0415 23:38:50 @common.py:102][0m group0/block1/conv2 output: [None, 92, 92, 64]
+[32m[0415 23:38:50 @common.py:94][0m group0/block1/convshortcut input: [None, 92, 92, 64]
+[32m[0415 23:38:50 @common.py:102][0m group0/block1/convshortcut output: [None, 92, 92, 64]
+[32m[0415 23:38:50 @common.py:94][0m group1/block0/conv1 input: [None, 92, 92, 64]
+[32m[0415 23:38:50 @common.py:102][0m group1/block0/conv1 output: [None, 46, 46, 128]
+[32m[0415 23:38:50 @common.py:94][0m group1/block0/conv2 input: [None, 46, 46, 128]
+[32m[0415 23:38:50 @common.py:102][0m group1/block0/conv2 output: [None, 46, 46, 128]
+[32m[0415 23:38:50 @common.py:94][0m group1/block0/convshortcut input: [None, 92, 92, 64]
+[32m[0415 23:38:50 @common.py:102][0m group1/block0/convshortcut output: [None, 46, 46, 128]
+[32m[0415 23:38:50 @common.py:94][0m group1/block1/conv1 input: [None, 46, 46, 128]
+[32m[0415 23:38:50 @common.py:102][0m group1/block1/conv1 output: [None, 46, 46, 128]
+[32m[0415 23:38:50 @common.py:94][0m group1/block1/conv2 input: [None, 46, 46, 128]
+[32m[0415 23:38:50 @common.py:102][0m group1/block1/conv2 output: [None, 46, 46, 128]
+[32m[0415 23:38:50 @common.py:94][0m group1/block1/convshortcut input: [None, 46, 46, 128]
+[32m[0415 23:38:50 @common.py:102][0m group1/block1/convshortcut output: [None, 46, 46, 128]
+[32m[0415 23:38:50 @common.py:94][0m group2/block0/conv1 input: [None, 46, 46, 128]
+[32m[0415 23:38:50 @common.py:102][0m group2/block0/conv1 output: [None, 23, 23, 256]
+[32m[0415 23:38:50 @common.py:94][0m group2/block0/conv2 input: [None, 23, 23, 256]
+[32m[0415 23:38:50 @common.py:102][0m group2/block0/conv2 output: [None, 23, 23, 256]
+[32m[0415 23:38:50 @common.py:94][0m group2/block0/convshortcut input: [None, 46, 46, 128]
+[32m[0415 23:38:50 @common.py:102][0m group2/block0/convshortcut output: [None, 23, 23, 256]
+[32m[0415 23:38:50 @common.py:94][0m group2/block1/conv1 input: [None, 23, 23, 256]
+[32m[0415 23:38:50 @common.py:102][0m group2/block1/conv1 output: [None, 23, 23, 256]
+[32m[0415 23:38:50 @common.py:94][0m group2/block1/conv2 input: [None, 23, 23, 256]
+[32m[0415 23:38:50 @common.py:102][0m group2/block1/conv2 output: [None, 23, 23, 256]
+[32m[0415 23:38:50 @common.py:94][0m group2/block1/convshortcut input: [None, 23, 23, 256]
+[32m[0415 23:38:50 @common.py:102][0m group2/block1/convshortcut output: [None, 23, 23, 256]
+[32m[0415 23:38:50 @common.py:94][0m gap input: [None, 23, 23, 256]
+[32m[0415 23:38:50 @common.py:102][0m gap output: [None, 256]
+[32m[0415 23:38:50 @common.py:94][0m linear input: [None, 256]
+[32m[0415 23:38:50 @common.py:102][0m linear output: [None, 1000]
+[32m[0415 23:38:50 @regularize.py:18][0m Apply regularizer for conv0/W:0
+[32m[0415 23:38:50 @regularize.py:18][0m Apply regularizer for group0/block0/conv1/W:0
+[32m[0415 23:38:50 @regularize.py:18][0m Apply regularizer for group0/block0/conv2/W:0
+[32m[0415 23:38:50 @regularize.py:18][0m Apply regularizer for group0/block0/convshortcut/W:0
+[32m[0415 23:38:50 @regularize.py:18][0m Apply regularizer for group0/block1/conv1/W:0
+[32m[0415 23:38:50 @regularize.py:18][0m Apply regularizer for group0/block1/conv2/W:0
+[32m[0415 23:38:50 @regularize.py:18][0m Apply regularizer for group0/block1/convshortcut/W:0
+[32m[0415 23:38:50 @regularize.py:18][0m Apply regularizer for group1/block0/conv1/W:0
+[32m[0415 23:38:50 @regularize.py:18][0m Apply regularizer for group1/block0/conv2/W:0
+[32m[0415 23:38:50 @regularize.py:18][0m Apply regularizer for group1/block0/convshortcut/W:0
+[32m[0415 23:38:50 @regularize.py:18][0m Apply regularizer for group1/block1/conv1/W:0
+[32m[0415 23:38:50 @regularize.py:18][0m Apply regularizer for group1/block1/conv2/W:0
+[32m[0415 23:38:50 @regularize.py:18][0m Apply regularizer for group1/block1/convshortcut/W:0
+[32m[0415 23:38:50 @regularize.py:18][0m Apply regularizer for group2/block0/conv1/W:0
+[32m[0415 23:38:50 @regularize.py:18][0m Apply regularizer for group2/block0/conv2/W:0
+[32m[0415 23:38:50 @regularize.py:18][0m Apply regularizer for group2/block0/convshortcut/W:0
+[32m[0415 23:38:50 @regularize.py:18][0m Apply regularizer for group2/block1/conv1/W:0
+[32m[0415 23:38:50 @regularize.py:18][0m Apply regularizer for group2/block1/conv2/W:0
+[32m[0415 23:38:50 @regularize.py:18][0m Apply regularizer for group2/block1/convshortcut/W:0
+[32m[0415 23:38:50 @develop.py:79][0m [5m[31mWRN[0m [Deprecated] Use positional args to call add_param_summary() instead of a list.
+[32m[0415 23:38:51 @model_utils.py:33][0m [36mModel Parameters: 
+[0mname                             shape                dim
+-------------------------------  ----------------  ------
+conv0/W:0                        [7, 7, 3, 64]       9408
+conv0/b:0                        [64]                  64
+conv0/bn/beta:0                  [64]                  64
+conv0/bn/gamma:0                 [64]                  64
+group0/block0/conv1/W:0          [3, 3, 64, 64]     36864
+group0/block0/conv1/b:0          [64]                  64
+group0/block0/conv1/bn/beta:0    [64]                  64
+group0/block0/conv1/bn/gamma:0   [64]                  64
+group0/block0/conv2/W:0          [3, 3, 64, 64]     36864
+group0/block0/conv2/b:0          [64]                  64
+group0/block0/convshortcut/W:0   [1, 1, 64, 64]      4096
+group0/block0/convshortcut/b:0   [64]                  64
+group0/block1/preact/bn/beta:0   [64]                  64
+group0/block1/preact/bn/gamma:0  [64]                  64
+group0/block1/conv1/W:0          [3, 3, 64, 64]     36864
+group0/block1/conv1/b:0          [64]                  64
+group0/block1/conv1/bn/beta:0    [64]                  64
+group0/block1/conv1/bn/gamma:0   [64]                  64
+group0/block1/conv2/W:0          [3, 3, 64, 64]     36864
+group0/block1/conv2/b:0          [64]                  64
+group0/block1/convshortcut/W:0   [1, 1, 64, 64]      4096
+group0/block1/convshortcut/b:0   [64]                  64
+group1/block0/preact/bn/beta:0   [64]                  64
+group1/block0/preact/bn/gamma:0  [64]                  64
+group1/block0/conv1/W:0          [3, 3, 64, 128]    73728
+group1/block0/conv1/b:0          [128]                128
+group1/block0/conv1/bn/beta:0    [128]                128
+group1/block0/conv1/bn/gamma:0   [128]                128
+group1/block0/conv2/W:0          [3, 3, 128, 128]  147456
+group1/block0/conv2/b:0          [128]                128
+group1/block0/convshortcut/W:0   [1, 1, 64, 128]     8192
+group1/block0/convshortcut/b:0   [128]                128
+group1/block1/preact/bn/beta:0   [128]                128
+group1/block1/preact/bn/gamma:0  [128]                128
+group1/block1/conv1/W:0          [3, 3, 128, 128]  147456
+group1/block1/conv1/b:0          [128]                128
+group1/block1/conv1/bn/beta:0    [128]                128
+group1/block1/conv1/bn/gamma:0   [128]                128
+group1/block1/conv2/W:0          [3, 3, 128, 128]  147456
+group1/block1/conv2/b:0          [128]                128
+group1/block1/convshortcut/W:0   [1, 1, 128, 128]   16384
+group1/block1/convshortcut/b:0   [128]                128
+group2/block0/preact/bn/beta:0   [128]                128
+group2/block0/preact/bn/gamma:0  [128]                128
+group2/block0/conv1/W:0          [3, 3, 128, 256]  294912
+group2/block0/conv1/b:0          [256]                256
+group2/block0/conv1/bn/beta:0    [256]                256
+group2/block0/conv1/bn/gamma:0   [256]                256
+group2/block0/conv2/W:0          [3, 3, 256, 256]  589824
+group2/block0/conv2/b:0          [256]                256
+group2/block0/convshortcut/W:0   [1, 1, 128, 256]   32768
+group2/block0/convshortcut/b:0   [256]                256
+group2/block1/preact/bn/beta:0   [256]                256
+group2/block1/preact/bn/gamma:0  [256]                256
+group2/block1/conv1/W:0          [3, 3, 256, 256]  589824
+group2/block1/conv1/b:0          [256]                256
+group2/block1/conv1/bn/beta:0    [256]                256
+group2/block1/conv1/bn/gamma:0   [256]                256
+group2/block1/conv2/W:0          [3, 3, 256, 256]  589824
+group2/block1/conv2/b:0          [256]                256
+group2/block1/convshortcut/W:0   [1, 1, 256, 256]   65536
+group2/block1/convshortcut/b:0   [256]                256
+bnlast/bn/beta:0                 [256]                256
+bnlast/bn/gamma:0                [256]                256
+linear/W:0                       [256, 1000]       256000
+linear/b:0                       [1000]              1000[36m
+Total #param=3131880 (11.95 MB assuming all float32)[0m
+[32m[0415 23:38:51 @base.py:116][0m Setup callbacks graph ...
+[32m[0415 23:38:51 @base.py:187][0m Building predictor graph towerp0 on gpu=0 ...
+[32m[0415 23:38:52 @base.py:121][0m Finalize the graph, create the session ...
+[32m[0415 23:38:52 @base.py:129][0m Graph variables initialized.
+[32m[0415 23:38:52 @concurrency.py:36][0m Starting EnqueueThread ...
+[32m[0415 23:38:52 @base.py:159][0m Start Epoch 1 ...

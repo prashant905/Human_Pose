@@ -1,0 +1,2 @@
+[32m[0415 23:18:30 @logger.py:69][0m Argv: main.py
+[32m[0415 23:18:30 @develop.py:79][0m [5m[31mWRN[0m [Deprecated] _get_input_vars() was renamed to _get_inputs(). Legacy period ends after 11 Apr

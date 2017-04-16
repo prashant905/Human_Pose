@@ -1,0 +1,49 @@
+[32m[0415 23:19:23 @logger.py:69][0m Argv: main.py
+[32m[0415 23:19:23 @common.py:94][0m conv1.1 input: [None, 368, 368, 3]
+[32m[0415 23:19:23 @common.py:102][0m conv1.1 output: [None, 368, 368, 64]
+[32m[0415 23:19:23 @common.py:94][0m pool1 input: [None, 368, 368, 64]
+[32m[0415 23:19:23 @common.py:102][0m pool1 output: [None, 184, 184, 64]
+[32m[0415 23:19:23 @common.py:94][0m conv2.1 input: [None, 184, 184, 64]
+[32m[0415 23:19:23 @common.py:102][0m conv2.1 output: [None, 184, 184, 128]
+[32m[0415 23:19:23 @common.py:94][0m pool2 input: [None, 184, 184, 128]
+[32m[0415 23:19:23 @common.py:102][0m pool2 output: [None, 92, 92, 128]
+[32m[0415 23:19:23 @common.py:94][0m conv3.1 input: [None, 92, 92, 128]
+[32m[0415 23:19:23 @common.py:102][0m conv3.1 output: [None, 92, 92, 256]
+[32m[0415 23:19:23 @common.py:94][0m pool3 input: [None, 92, 92, 256]
+[32m[0415 23:19:23 @common.py:102][0m pool3 output: [None, 46, 46, 256]
+[32m[0415 23:19:23 @common.py:94][0m conv4.1 input: [None, 46, 46, 256]
+[32m[0415 23:19:23 @common.py:102][0m conv4.1 output: [None, 46, 46, 512]
+[32m[0415 23:19:23 @common.py:94][0m conv4.2 input: [None, 46, 46, 512]
+[32m[0415 23:19:23 @common.py:102][0m conv4.2 output: [None, 46, 46, 512]
+[32m[0415 23:19:23 @common.py:94][0m conv4.3 input: [None, 46, 46, 512]
+[32m[0415 23:19:23 @common.py:102][0m conv4.3 output: [None, 46, 46, 512]
+[32m[0415 23:19:23 @common.py:94][0m conv4.4 input: [None, 46, 46, 512]
+[32m[0415 23:19:23 @common.py:102][0m conv4.4 output: [None, 46, 46, 1]
+[32m[0415 23:19:23 @regularize.py:18][0m Apply regularizer for conv1.1/W:0
+[32m[0415 23:19:23 @regularize.py:18][0m Apply regularizer for conv2.1/W:0
+[32m[0415 23:19:23 @regularize.py:18][0m Apply regularizer for conv3.1/W:0
+[32m[0415 23:19:23 @regularize.py:18][0m Apply regularizer for conv4.1/W:0
+[32m[0415 23:19:23 @regularize.py:18][0m Apply regularizer for conv4.2/W:0
+[32m[0415 23:19:23 @regularize.py:18][0m Apply regularizer for conv4.3/W:0
+[32m[0415 23:19:23 @regularize.py:18][0m Apply regularizer for conv4.4/W:0
+[32m[0415 23:19:23 @develop.py:79][0m [5m[31mWRN[0m [Deprecated] Use positional args to call add_param_summary() instead of a list.
+[32m[0415 23:19:23 @model_utils.py:33][0m [36mModel Parameters: 
+[0mname         shape                  dim
+-----------  ----------------  --------
+conv1.1/W:0  [9, 9, 3, 64]        15552
+conv1.1/b:0  [64]                    64
+conv2.1/W:0  [9, 9, 64, 128]     663552
+conv2.1/b:0  [128]                  128
+conv3.1/W:0  [9, 9, 128, 256]   2654208
+conv3.1/b:0  [256]                  256
+conv4.1/W:0  [5, 5, 256, 512]   3276800
+conv4.1/b:0  [512]                  512
+conv4.2/W:0  [9, 9, 512, 512]  21233664
+conv4.2/b:0  [512]                  512
+conv4.3/W:0  [1, 1, 512, 512]    262144
+conv4.3/b:0  [512]                  512
+conv4.4/W:0  [1, 1, 512, 1]         512
+conv4.4/b:0  [1]                      1[36m
+Total #param=28108417 (107.23 MB assuming all float32)[0m
+[32m[0415 23:19:23 @base.py:116][0m Setup callbacks graph ...
+[32m[0415 23:19:23 @base.py:187][0m Building predictor graph towerp0 on gpu=0 ...
